@@ -3,12 +3,14 @@ import { Typography, Box, Grid, type SelectChangeEvent } from '@mui/material';
 import { useAppSelector } from '../store/hooks';
 import PizzaCard from '../components/PizzaCard';
 import MenuFilters from '../components/MenuFilters';
+import PromoBanner from '../components/PromoBanner';
 
 const Dashboard: React.FC = () => {
     const { pizzas } = useAppSelector((state) => state.menu);
     const [searchTerm, setSearchTerm] = useState('');
     const [category, setCategory] = useState('All');
     const [sortBy, setSortBy] = useState('name-asc');
+    const [showPromo, setShowPromo] = useState(true);
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
@@ -60,6 +62,8 @@ const Dashboard: React.FC = () => {
             <Typography variant="h4" component="h1" gutterBottom align="center">
                 Our Menu
             </Typography>
+
+            {showPromo && <PromoBanner onClose={() => setShowPromo(false)} />}
 
             <MenuFilters
                 searchTerm={searchTerm}

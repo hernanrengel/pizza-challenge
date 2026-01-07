@@ -5,44 +5,101 @@ const loadCartFromStorage = (): CartState => {
   try {
     const serializedCart = localStorage.getItem('pizzaCart');
     if (serializedCart === null) {
-      return { items: [], total: 0 };
+      return { items: [], total: 0, totalDiscount: 0 };
     }
-    return JSON.parse(serializedCart);
+    const parsed = JSON.parse(serializedCart);
+    // Ensure totalDiscount exists in loaded state
+    return {
+      ...parsed,
+      totalDiscount: parsed.totalDiscount || 0,
+    };
   } catch {
-    return { items: [], total: 0 };
+    return { items: [], total: 0, totalDiscount: 0 };
+  }
+};
+
+const saveCartToStorage = (state: CartState) => {
+  try {
+    const serializedCart = JSON.stringify(state);
+    localStorage.setItem('pizzaCart', serializedCart);
+  } catch {
+    // Ignore write errors
   }
 };
 
 const initialState: CartState = loadCartFromStorage();
 
-const calculateTotal = (items: CartItem[]) => {
-  return items.reduce((total, item) => total + item.price * item.quantity, 0);
+// Helper to recalculate totals
+const calculateTotals = (items: CartItem[]) => {
+  let total = 0;
+  let totalDiscount = 0;
+
+  const updatedItems = items.map((item) => {
+    const lineTotal = item.price * item.quantity;
+    let discount = 0;
+
+    // Discount Rule: 10% off if quantity >= 3
+    if (item.quantity >= 3) {
+      discount = lineTotal * 0.1;
+    }
+
+    total += lineTotal - discount;
+    totalDiscount += discount;
+
+    return { ...item, discount };
+  });
+
+  return { updatedItems, total, totalDiscount };
 };
+
+// Re-calculate on load to ensure consistency
+const {
+  updatedItems: initialItems,
+  total: initialTotal,
+  totalDiscount: initialTotalDiscount,
+} = calculateTotals(initialState.items);
+initialState.items = initialItems;
+initialState.total = initialTotal;
+initialState.totalDiscount = initialTotalDiscount;
 
 const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
-    addToCart: (state, action: PayloadAction<Omit<CartItem, 'id'>>) => {
+    addToCart: (
+      state,
+      action: PayloadAction<Omit<CartItem, 'id' | 'discount'>>
+    ) => {
       const newItem = action.payload;
-      const existingItem = state.items.find(
-        (item) => item.pizzaId === newItem.pizzaId && item.size === newItem.size
-      );
+      const id = `${newItem.pizzaId}-${newItem.size}`;
+      const existingItem = state.items.find((item) => item.id === id);
 
       if (existingItem) {
         existingItem.quantity += newItem.quantity;
       } else {
-        // Generate a unique ID for the cart item
-        const id = `${newItem.pizzaId}-${newItem.size}`;
-        state.items.push({ ...newItem, id });
+        state.items.push({ ...newItem, id, discount: 0 });
       }
-      state.total = calculateTotal(state.items);
-      localStorage.setItem('pizzaCart', JSON.stringify(state));
+
+      const { updatedItems, total, totalDiscount } = calculateTotals(
+        state.items
+      );
+      state.items = updatedItems;
+      state.total = total;
+      state.totalDiscount = totalDiscount;
+
+      saveCartToStorage(state);
     },
     removeFromCart: (state, action: PayloadAction<string>) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
-      state.total = calculateTotal(state.items);
-      localStorage.setItem('pizzaCart', JSON.stringify(state));
+
+      const { updatedItems, total, totalDiscount } = calculateTotals(
+        state.items
+      );
+      state.items = updatedItems;
+      state.total = total;
+      state.totalDiscount = totalDiscount;
+
+      saveCartToStorage(state);
     },
     updateQuantity: (
       state,
@@ -53,12 +110,20 @@ const cartSlice = createSlice({
       if (item) {
         item.quantity = Math.max(1, quantity);
       }
-      state.total = calculateTotal(state.items);
-      localStorage.setItem('pizzaCart', JSON.stringify(state));
+
+      const { updatedItems, total, totalDiscount } = calculateTotals(
+        state.items
+      );
+      state.items = updatedItems;
+      state.total = total;
+      state.totalDiscount = totalDiscount;
+
+      saveCartToStorage(state);
     },
     clearCart: (state) => {
       state.items = [];
       state.total = 0;
+      state.totalDiscount = 0;
       localStorage.removeItem('pizzaCart');
     },
   },

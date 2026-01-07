@@ -26,7 +26,7 @@ interface CartSidebarProps {
 }
 
 const CartSidebar: React.FC<CartSidebarProps> = ({ open, onClose }) => {
-  const { items, total } = useAppSelector((state) => state.cart);
+  const { items, total, totalDiscount } = useAppSelector((state) => state.cart);
   const dispatch = useAppDispatch();
 
   const handleIncrement = (id: string, currentQuantity: number) => {
@@ -95,100 +95,137 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ open, onClose }) => {
       ) : (
         <>
           <List sx={{ flexGrow: 1, overflowY: 'auto', p: 0 }}>
-            {items.map((item) => (
-              <React.Fragment key={item.id}>
-                <ListItem
-                  alignItems="flex-start"
-                  secondaryAction={
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={() => handleRemove(item.id)}
-                      color="error"
-                      size="small"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  }
-                  sx={{ py: 2, px: 2 }}
-                >
-                  <ListItemAvatar>
-                    <Avatar
-                      alt={item.name}
-                      src={item.imageUrl}
-                      variant="rounded"
-                      sx={{ width: 60, height: 60, mr: 2 }}
-                    />
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        {item.name}
-                      </Typography>
-                    }
-                    secondaryTypographyProps={{ component: 'div' }}
-                    secondary={
-                      <Box sx={{ mt: 0.5 }}>
-                        <Typography variant="body2" color="text.secondary">
-                          Size: {item.size}
-                        </Typography>
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          justifyContent="space-between"
-                          sx={{ mt: 1.5, width: '100%', pr: 4 }}
-                        >
-                          <Typography variant="body1" fontWeight="bold">
-                            ${(item.price * item.quantity).toFixed(2)}
-                          </Typography>
+            {items.map((item) => {
+              const lineTotal = item.price * item.quantity;
+              const hasDiscount = (item.discount || 0) > 0;
+              const finalLineTotal = lineTotal - (item.discount || 0);
 
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              border: '1px solid',
-                              borderColor: 'divider',
-                              borderRadius: 1,
-                              bgcolor: 'background.paper',
-                            }}
+              return (
+                <React.Fragment key={item.id}>
+                  <ListItem
+                    alignItems="flex-start"
+                    secondaryAction={
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={() => handleRemove(item.id)}
+                        color="error"
+                        size="small"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    }
+                    sx={{ py: 2, px: 2 }}
+                  >
+                    <ListItemAvatar>
+                      <Avatar
+                        alt={item.name}
+                        src={item.imageUrl}
+                        variant="rounded"
+                        sx={{ width: 60, height: 60, mr: 2 }}
+                      />
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
+                        <Typography variant="subtitle1" fontWeight="bold">
+                          {item.name}
+                        </Typography>
+                      }
+                      secondaryTypographyProps={{ component: 'div' }}
+                      secondary={
+                        <Box sx={{ mt: 0.5 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            Size: {item.size}
+                          </Typography>
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            justifyContent="space-between"
+                            sx={{ mt: 1.5, width: '100%', pr: 4 }}
                           >
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                handleDecrement(item.id, item.quantity)
-                              }
-                              sx={{ p: 0.5 }}
-                            >
-                              <RemoveIcon fontSize="small" />
-                            </IconButton>
-                            <Typography
+                            <Box>
+                              {hasDiscount ? (
+                                <>
+                                  <Typography
+                                    variant="body2"
+                                    sx={{
+                                      textDecoration: 'line-through',
+                                      color: 'text.secondary',
+                                      fontSize: '0.8rem',
+                                    }}
+                                  >
+                                    ${lineTotal.toFixed(2)}
+                                  </Typography>
+                                  <Typography
+                                    variant="body1"
+                                    fontWeight="bold"
+                                    color="success.main"
+                                  >
+                                    ${finalLineTotal.toFixed(2)}
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    color="success.main"
+                                  >
+                                    Saved ${(item.discount || 0).toFixed(2)}{' '}
+                                    (10%)
+                                  </Typography>
+                                </>
+                              ) : (
+                                <Typography variant="body1" fontWeight="bold">
+                                  ${lineTotal.toFixed(2)}
+                                </Typography>
+                              )}
+                            </Box>
+
+                            <Box
                               sx={{
-                                mx: 1.5,
-                                minWidth: 20,
-                                textAlign: 'center',
-                                fontWeight: 'bold',
+                                display: 'flex',
+                                alignItems: 'center',
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                borderRadius: 1,
+                                bgcolor: 'background.paper',
                               }}
                             >
-                              {item.quantity}
-                            </Typography>
-                            <IconButton
-                              size="small"
-                              onClick={() =>
-                                handleIncrement(item.id, item.quantity)
-                              }
-                              sx={{ p: 0.5 }}
-                            >
-                              <AddIcon fontSize="small" />
-                            </IconButton>
-                          </Box>
-                        </Stack>
-                      </Box>
-                    }
-                  />
-                </ListItem>
-                <Divider component="li" />
-              </React.Fragment>
-            ))}
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  handleDecrement(item.id, item.quantity)
+                                }
+                                sx={{ p: 0.5 }}
+                              >
+                                <RemoveIcon fontSize="small" />
+                              </IconButton>
+                              <Typography
+                                sx={{
+                                  mx: 1.5,
+                                  minWidth: 20,
+                                  textAlign: 'center',
+                                  fontWeight: 'bold',
+                                }}
+                              >
+                                {item.quantity}
+                              </Typography>
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  handleIncrement(item.id, item.quantity)
+                                }
+                                sx={{ p: 0.5 }}
+                              >
+                                <AddIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          </Stack>
+                        </Box>
+                      }
+                    />
+                  </ListItem>
+                  <Divider component="li" />
+                </React.Fragment>
+              );
+            })}
           </List>
 
           <Box
@@ -199,6 +236,20 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ open, onClose }) => {
               bgcolor: 'background.paper',
             }}
           >
+            {totalDiscount > 0 && (
+              <Stack direction="row" justifyContent="space-between" mb={1}>
+                <Typography variant="body1" color="success.main">
+                  Total Savings
+                </Typography>
+                <Typography
+                  variant="body1"
+                  fontWeight="bold"
+                  color="success.main"
+                >
+                  -${totalDiscount.toFixed(2)}
+                </Typography>
+              </Stack>
+            )}
             <Stack direction="row" justifyContent="space-between" mb={2}>
               <Typography variant="h6">Total</Typography>
               <Typography variant="h6" fontWeight="bold" color="primary">
