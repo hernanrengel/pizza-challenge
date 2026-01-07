@@ -27,6 +27,7 @@ export interface CartItem {
   size: PizzaSize['size'];
   imageUrl: string;
   discount?: number;
+  category?: string;
 }
 
 export interface CartState {

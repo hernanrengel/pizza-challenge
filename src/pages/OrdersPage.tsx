@@ -19,6 +19,7 @@ import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import LocalPizzaIcon from '@mui/icons-material/LocalPizza';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { useNavigate } from 'react-router-dom';
+import OrdersCharts from '../components/OrdersCharts';
 
 const OrdersPage: React.FC = () => {
     const { orders } = useAppSelector((state) => state.orders);
@@ -201,6 +202,9 @@ const OrdersPage: React.FC = () => {
                     </Paper>
                 </Grid>
             </Grid>
+
+            {/* Charts Section */}
+            <OrdersCharts orders={orders} />
 
             <Grid container spacing={3}>
                 {orders.map((order) => (

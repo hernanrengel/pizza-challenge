@@ -100,6 +100,7 @@ const PizzaCard: React.FC<PizzaCardProps> = ({ pizza }) => {
                 quantity: localQuantity,
                 size: selectedSize,
                 imageUrl: pizza.imageUrl,
+                category: pizza.category,
             })
         );
         setLocalQuantity(1);
