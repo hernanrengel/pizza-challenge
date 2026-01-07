@@ -65,6 +65,22 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick, onAddPizzaClick }) => {
           </Box>
 
           <Button
+            color="inherit"
+            onClick={() => navigate('/')}
+            sx={{ mr: 2, textTransform: 'none' }}
+          >
+            Menu
+          </Button>
+
+          <Button
+            color="inherit"
+            onClick={() => navigate('/orders')}
+            sx={{ mr: 2, textTransform: 'none' }}
+          >
+            Orders
+          </Button>
+
+          <Button
             color="primary"
             variant="outlined"
             startIcon={<AddIcon />}

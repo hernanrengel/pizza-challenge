@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import Navbar from './components/Navbar';
 import CartSidebar from './components/CartSidebar';
 import AddPizzaModal from './components/AddPizzaModal';
+import OrdersPage from './pages/OrdersPage';
 
 function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -25,6 +26,7 @@ function App() {
       <Container maxWidth="lg" sx={{ flexGrow: 1, py: 4 }}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/orders" element={<OrdersPage />} />
         </Routes>
       </Container>
     </Box>

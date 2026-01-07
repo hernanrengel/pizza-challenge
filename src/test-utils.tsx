@@ -5,6 +5,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import menuReducer from './store/menuSlice';
 import cartReducer from './store/cartSlice';
+import ordersReducer from './store/ordersSlice';
 import type { RootState, AppStore } from './store/store';
 
 interface ExtendedRenderOptions extends Omit<RenderOptions, 'queries'> {
@@ -21,6 +22,7 @@ export function renderWithProviders(
             reducer: {
                 menu: menuReducer as any,
                 cart: cartReducer as any,
+                orders: ordersReducer as any,
             },
             preloadedState,
         }) as AppStore,
