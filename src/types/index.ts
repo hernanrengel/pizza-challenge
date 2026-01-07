@@ -17,3 +17,18 @@ export interface MenuState {
   loading: boolean;
   error: string | null;
 }
+
+export interface CartItem {
+  id: string;
+  pizzaId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  size: PizzaSize['size'];
+  imageUrl: string;
+}
+
+export interface CartState {
+  items: CartItem[];
+  total: number;
+}

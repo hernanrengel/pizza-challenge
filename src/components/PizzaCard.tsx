@@ -10,15 +10,34 @@ import {
     ToggleButton,
     ToggleButtonGroup,
     Chip,
+    IconButton,
 } from '@mui/material';
 import type { Pizza, PizzaSize } from '../types';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { addToCart, updateQuantity, removeFromCart } from '../store/cartSlice';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 
 interface PizzaCardProps {
     pizza: Pizza;
 }
 
 const PizzaCard: React.FC<PizzaCardProps> = ({ pizza }) => {
+    const dispatch = useAppDispatch();
+    const cartItems = useAppSelector((state) => state.cart.items);
     const [selectedSize, setSelectedSize] = useState<PizzaSize['size']>('Medium');
+
+    const [localQuantity, setLocalQuantity] = useState(1);
+
+    // Check if the current pizza + size is in the cart
+    const cartItem = cartItems.find(
+        (item) => item.pizzaId === pizza.id && item.size === selectedSize
+    );
+    const isInCart = !!cartItem;
+
+    // Derived state: if in cart, use cart quantity; otherwise use local quantity
+    const displayQuantity =
+        isInCart && cartItem ? cartItem.quantity : localQuantity;
 
     const handleSizeChange = (
         _event: React.MouseEvent<HTMLElement>,
@@ -26,11 +45,57 @@ const PizzaCard: React.FC<PizzaCardProps> = ({ pizza }) => {
     ) => {
         if (newSize !== null) {
             setSelectedSize(newSize);
+            // Reset local quantity when size changes (if not in cart)
+            if (
+                !cartItems.find(
+                    (item) => item.pizzaId === pizza.id && item.size === newSize
+                )
+            ) {
+                setLocalQuantity(1);
+            }
         }
     };
 
     const currentPrice =
         pizza.sizes.find((s) => s.size === selectedSize)?.price || 0;
+
+    const handleIncrement = () => {
+        if (isInCart && cartItem) {
+            dispatch(
+                updateQuantity({ id: cartItem.id, quantity: cartItem.quantity + 1 })
+            );
+        } else {
+            setLocalQuantity((prev) => prev + 1);
+        }
+    };
+
+    const handleDecrement = () => {
+        if (isInCart && cartItem) {
+            if (cartItem.quantity > 1) {
+                dispatch(
+                    updateQuantity({ id: cartItem.id, quantity: cartItem.quantity - 1 })
+                );
+            } else {
+                dispatch(removeFromCart(cartItem.id));
+            }
+        } else {
+            setLocalQuantity((prev) => Math.max(1, prev - 1));
+        }
+    };
+
+    const handleAddToCart = () => {
+        dispatch(
+            addToCart({
+                pizzaId: pizza.id,
+                name: pizza.name,
+                price: currentPrice,
+                quantity: localQuantity,
+                size: selectedSize,
+                imageUrl: pizza.imageUrl,
+            })
+        );
+        setLocalQuantity(1);
+    };
 
     return (
         <Card
@@ -39,10 +104,13 @@ const PizzaCard: React.FC<PizzaCardProps> = ({ pizza }) => {
                 display: 'flex',
                 flexDirection: 'column',
                 borderRadius: 4,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                boxShadow: isInCart
+                    ? '0 0 0 2px #1976d2, 0 4px 12px rgba(0,0,0,0.1)'
+                    : '0 4px 12px rgba(0,0,0,0.1)',
                 overflow: 'visible',
                 position: 'relative',
-                mt: 4, // Add margin top to allow image to overlap if needed, or just spacing
+                mt: 4,
+                transition: 'box-shadow 0.3s ease',
             }}
         >
             <CardContent sx={{ flexGrow: 1, pt: 3 }}>
@@ -151,7 +219,7 @@ const PizzaCard: React.FC<PizzaCardProps> = ({ pizza }) => {
                                 fontWeight: 500,
                                 color: 'text.secondary',
                                 '&.Mui-selected': {
-                                    backgroundColor: '#001e3c', // Dark navy like in the image
+                                    backgroundColor: '#001e3c',
                                     color: 'white',
                                     '&:hover': {
                                         backgroundColor: '#002e5c',
@@ -167,20 +235,67 @@ const PizzaCard: React.FC<PizzaCardProps> = ({ pizza }) => {
                 </Box>
             </CardContent>
 
-            {/* Add to Cart Button - Kept for functionality but styled minimally */}
-            <CardActions sx={{ p: 2, pt: 0 }}>
-                <Button
-                    variant="contained"
-                    fullWidth
+            <CardActions sx={{ p: 2, pt: 0, flexDirection: 'column', gap: 2 }}>
+                {/* Quantity Selector */}
+                <Box
                     sx={{
-                        borderRadius: 2,
-                        textTransform: 'none',
-                        fontWeight: 'bold',
-                        boxShadow: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 2,
+                        width: '100%',
                     }}
                 >
-                    Add to Cart
-                </Button>
+                    <IconButton
+                        size="small"
+                        onClick={handleDecrement}
+                        disabled={!isInCart && displayQuantity <= 1}
+                        sx={{ border: '1px solid', borderColor: 'divider' }}
+                    >
+                        <RemoveIcon fontSize="small" />
+                    </IconButton>
+                    <Typography variant="body1" fontWeight="bold">
+                        {displayQuantity}
+                    </Typography>
+                    <IconButton
+                        size="small"
+                        onClick={handleIncrement}
+                        sx={{ border: '1px solid', borderColor: 'divider' }}
+                    >
+                        <AddIcon fontSize="small" />
+                    </IconButton>
+                </Box>
+
+                {isInCart ? (
+                    <Button
+                        variant="outlined"
+                        fullWidth
+                        color="primary"
+                        sx={{
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontWeight: 'bold',
+                            boxShadow: 'none',
+                            bgcolor: 'action.hover',
+                        }}
+                    >
+                        In Cart (Total: ${(currentPrice * displayQuantity).toFixed(2)})
+                    </Button>
+                ) : (
+                    <Button
+                        variant="contained"
+                        fullWidth
+                        onClick={handleAddToCart}
+                        sx={{
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontWeight: 'bold',
+                            boxShadow: 'none',
+                        }}
+                    >
+                        Add to Cart - ${(currentPrice * displayQuantity).toFixed(2)}
+                    </Button>
+                )}
             </CardActions>
         </Card>
     );
