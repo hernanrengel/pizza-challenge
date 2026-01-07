@@ -9,7 +9,6 @@ import {
     Divider,
     Stack,
     Button,
-    Paper,
     useTheme,
     alpha,
 } from '@mui/material';
@@ -18,8 +17,10 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import LocalPizzaIcon from '@mui/icons-material/LocalPizza';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import SavingsIcon from '@mui/icons-material/Savings';
 import { useNavigate } from 'react-router-dom';
 import OrdersCharts from '../components/OrdersCharts';
+import SummaryCard from '../components/SummaryCard';
 
 const OrdersPage: React.FC = () => {
     const { orders } = useAppSelector((state) => state.orders);
@@ -32,6 +33,7 @@ const OrdersPage: React.FC = () => {
             acc + order.items.reduce((sum, item) => sum + item.quantity, 0),
         0
     );
+    const totalSaved = orders.reduce((acc, order) => acc + order.totalDiscount, 0);
 
     if (orders.length === 0) {
         return (
@@ -102,104 +104,37 @@ const OrdersPage: React.FC = () => {
 
             {/* Summary Dashboard */}
             <Grid container spacing={3} sx={{ mb: 6 }}>
-                <Grid size={{ xs: 12, md: 4 }}>
-                    <Paper
-                        elevation={0}
-                        sx={{
-                            p: 3,
-                            borderRadius: 4,
-                            bgcolor: alpha(theme.palette.primary.main, 0.05),
-                            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 2,
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                p: 1.5,
-                                borderRadius: 3,
-                                bgcolor: 'background.paper',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                            }}
-                        >
-                            <ShoppingBagIcon color="primary" fontSize="large" />
-                        </Box>
-                        <Box>
-                            <Typography variant="body2" color="text.secondary" fontWeight="bold">
-                                TOTAL ORDERS
-                            </Typography>
-                            <Typography variant="h4" fontWeight="900" color="primary.main">
-                                {orders.length}
-                            </Typography>
-                        </Box>
-                    </Paper>
+                <Grid size={{ xs: 12, md: 3 }}>
+                    <SummaryCard
+                        title="TOTAL ORDERS"
+                        value={orders.length}
+                        icon={ShoppingBagIcon}
+                        color="primary"
+                    />
                 </Grid>
-                <Grid size={{ xs: 12, md: 4 }}>
-                    <Paper
-                        elevation={0}
-                        sx={{
-                            p: 3,
-                            borderRadius: 4,
-                            bgcolor: alpha(theme.palette.success.main, 0.05),
-                            border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 2,
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                p: 1.5,
-                                borderRadius: 3,
-                                bgcolor: 'background.paper',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                            }}
-                        >
-                            <AttachMoneyIcon color="success" fontSize="large" />
-                        </Box>
-                        <Box>
-                            <Typography variant="body2" color="text.secondary" fontWeight="bold">
-                                TOTAL SPENT
-                            </Typography>
-                            <Typography variant="h4" fontWeight="900" color="success.main">
-                                ${totalSpent.toFixed(2)}
-                            </Typography>
-                        </Box>
-                    </Paper>
+                <Grid size={{ xs: 12, md: 3 }}>
+                    <SummaryCard
+                        title="TOTAL SPENT"
+                        value={`$${totalSpent.toFixed(2)}`}
+                        icon={AttachMoneyIcon}
+                        color="success"
+                    />
                 </Grid>
-                <Grid size={{ xs: 12, md: 4 }}>
-                    <Paper
-                        elevation={0}
-                        sx={{
-                            p: 3,
-                            borderRadius: 4,
-                            bgcolor: alpha(theme.palette.warning.main, 0.05),
-                            border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 2,
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                p: 1.5,
-                                borderRadius: 3,
-                                bgcolor: 'background.paper',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                            }}
-                        >
-                            <LocalPizzaIcon color="warning" fontSize="large" />
-                        </Box>
-                        <Box>
-                            <Typography variant="body2" color="text.secondary" fontWeight="bold">
-                                PIZZAS ORDERED
-                            </Typography>
-                            <Typography variant="h4" fontWeight="900" color="warning.main">
-                                {totalPizzas}
-                            </Typography>
-                        </Box>
-                    </Paper>
+                <Grid size={{ xs: 12, md: 3 }}>
+                    <SummaryCard
+                        title="TOTAL SAVED"
+                        value={`$${totalSaved.toFixed(2)}`}
+                        icon={SavingsIcon}
+                        color="info"
+                    />
+                </Grid>
+                <Grid size={{ xs: 12, md: 3 }}>
+                    <SummaryCard
+                        title="PIZZAS ORDERED"
+                        value={totalPizzas}
+                        icon={LocalPizzaIcon}
+                        color="warning"
+                    />
                 </Grid>
             </Grid>
 
@@ -273,6 +208,7 @@ const OrdersPage: React.FC = () => {
                                                 variant="body2"
                                                 color="success.main"
                                                 fontWeight="bold"
+                                                fontStyle="italic"
                                             >
                                                 You saved ${order.totalDiscount.toFixed(2)}!
                                             </Typography>
