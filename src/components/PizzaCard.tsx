@@ -56,8 +56,16 @@ const PizzaCard: React.FC<PizzaCardProps> = ({ pizza }) => {
         }
     };
 
-    const currentPrice =
-        pizza.sizes.find((s) => s.size === selectedSize)?.price || 0;
+    const currentPrice = React.useMemo(() => {
+        switch (selectedSize) {
+            case 'Small':
+                return pizza.price - 2;
+            case 'Large':
+                return pizza.price + 2;
+            default:
+                return pizza.price;
+        }
+    }, [pizza.price, selectedSize]);
 
     const handleIncrement = () => {
         if (isInCart && cartItem) {

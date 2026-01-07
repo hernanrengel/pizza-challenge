@@ -6,7 +6,7 @@ export interface PizzaSize {
 export interface Pizza {
   id: string;
   name: string;
-  sizes: PizzaSize[];
+  price: number;
   ingredients: string[];
   imageUrl: string;
   category: string;

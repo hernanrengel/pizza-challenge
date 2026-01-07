@@ -40,17 +40,10 @@ const Dashboard: React.FC = () => {
                         return a.name.localeCompare(b.name);
                     case 'name-desc':
                         return b.name.localeCompare(a.name);
-                    case 'price-asc': {
-                        // Use medium size price for sorting
-                        const priceA = a.sizes.find((s) => s.size === 'Medium')?.price || 0;
-                        const priceB = b.sizes.find((s) => s.size === 'Medium')?.price || 0;
-                        return priceA - priceB;
-                    }
-                    case 'price-desc': {
-                        const priceC = a.sizes.find((s) => s.size === 'Medium')?.price || 0;
-                        const priceD = b.sizes.find((s) => s.size === 'Medium')?.price || 0;
-                        return priceD - priceC;
-                    }
+                    case 'price-asc':
+                        return a.price - b.price;
+                    case 'price-desc':
+                        return b.price - a.price;
                     default:
                         return 0;
                 }

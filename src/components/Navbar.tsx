@@ -11,14 +11,16 @@ import {
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import LocalPizzaIcon from '@mui/icons-material/LocalPizza';
+import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../store/hooks';
 
 interface NavbarProps {
   onCartClick: () => void;
+  onAddPizzaClick: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onCartClick }) => {
+const Navbar: React.FC<NavbarProps> = ({ onCartClick, onAddPizzaClick }) => {
   const navigate = useNavigate();
   const { items } = useAppSelector((state) => state.cart);
 
@@ -62,9 +64,16 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick }) => {
             </Typography>
           </Box>
 
-          <Button color="inherit" onClick={() => navigate('/')}>
-            Menu
+          <Button
+            color="primary"
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={onAddPizzaClick}
+            sx={{ mr: 2, borderRadius: 2, textTransform: 'none' }}
+          >
+            Add Pizza
           </Button>
+
           <IconButton
             size="large"
             aria-label="show cart items"

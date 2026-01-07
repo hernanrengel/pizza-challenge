@@ -1,9 +1,9 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { MenuState, Pizza } from '../types';
-import pizzasData from '../data/pizzas.json';
+import { pizzas as pizzasData } from '../data/pizzas';
 
 const initialState: MenuState = {
-  pizzas: pizzasData as Pizza[],
+  pizzas: pizzasData,
   loading: false,
   error: null,
 };
@@ -11,7 +11,13 @@ const initialState: MenuState = {
 const menuSlice = createSlice({
   name: 'menu',
   initialState,
-  reducers: {},
+  reducers: {
+    addPizza: (state, action: PayloadAction<Pizza>) => {
+      state.pizzas.push(action.payload);
+    },
+  },
 });
+
+export const { addPizza } = menuSlice.actions;
 
 export default menuSlice.reducer;
